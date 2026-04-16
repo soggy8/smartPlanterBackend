@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+.env
+.env.*
+
+# Tests / tools
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Ultralytics / training artifacts
+runs/
+wandb/
+*.pt
+
+# Local weights (download or train your own)
+weights/*.pt
+
+# Prepared dataset (large; regenerate on GPU with scripts/prepare_kaggle_tomato_dataset.py)
+datasets/plant_leaves/images/train/*
+!datasets/plant_leaves/images/train/.gitkeep
+datasets/plant_leaves/images/val/*
+!datasets/plant_leaves/images/val/.gitkeep
+datasets/plant_leaves/labels/train/*
+!datasets/plant_leaves/labels/train/.gitkeep
+datasets/plant_leaves/labels/val/*
+!datasets/plant_leaves/labels/val/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

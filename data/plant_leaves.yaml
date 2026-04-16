@@ -1,0 +1,15 @@
+# YOLO dataset config — paths are relative to this file's directory unless absolute.
+# Place images under datasets/plant_leaves/images/{train,val}
+# and labels under datasets/plant_leaves/labels/{train,val} (YOLO .txt per image).
+
+path: ../datasets/plant_leaves
+train: images/train
+val: images/val
+
+names:
+  0: healthy_leaf
+  1: yellow_leaf
+  2: spotted_leaf
+  3: damaged_leaf
+
+nc: 4
