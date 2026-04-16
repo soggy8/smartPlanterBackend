@@ -151,6 +151,25 @@ From the project root (GPU recommended):
 python train.py --data data/plant_leaves.yaml --epochs 40 --imgsz 640 --weights yolov8n.pt
 ```
 
+### Headless Ubuntu / cloud GPU: `ImportError: libxcb.so.1`
+
+Ultralytics pulls OpenCV; the default **GUI** build expects X11 libraries. On minimal images (many cloud VMs), import fails with `libxcb.so.1`.
+
+**Preferred (no sudo):** use headless OpenCV in your venv (listed in `requirements.txt`; if you installed before it was added, run):
+
+```bash
+pip uninstall -y opencv-python
+pip install opencv-python-headless
+```
+
+**Alternative (system libs):**
+
+```bash
+sudo apt-get update && sudo apt-get install -y libxcb1
+```
+
+Then retry `python train.py ...`.
+
 Ultralytics writes weights under `runs/detect/train*/weights/best.pt` (incrementing `train`, `train2`, …). Point inference at the newest run:
 
 ```bash
