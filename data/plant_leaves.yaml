@@ -1,8 +1,8 @@
-# YOLO dataset config — paths are relative to this file's directory unless absolute.
-# Place images under datasets/plant_leaves/images/{train,val}
-# and labels under datasets/plant_leaves/labels/{train,val} (YOLO .txt per image).
+# YOLO dataset config.
+# Ultralytics resolves ``path`` against the **process working directory** (run ``train.py`` from repo root).
+# Place images under datasets/plant_leaves/images/{train,val} and labels under labels/{train,val}.
 
-path: ../datasets/plant_leaves
+path: datasets/plant_leaves
 train: images/train
 val: images/val
 
