@@ -33,6 +33,7 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Open `http://127.0.0.1:8000/docs` for interactive OpenAPI.
+Open `http://127.0.0.1:8000/ui` for a simple browser UI.
 
 ## Environment variables
 
@@ -73,6 +74,18 @@ curl -sS http://127.0.0.1:8000/analysis
 ```
 
 Order matters: **sensor** and **image** must be posted before **GET /analysis**.
+
+One-command local test:
+
+```bash
+bash scripts/test_pipeline.sh
+```
+
+Use a custom image path:
+
+```bash
+bash scripts/test_pipeline.sh /absolute/path/to/tomato.jpg
+```
 
 ## Sample sensor generator
 

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, Response, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 import llm
@@ -16,6 +18,7 @@ import vision
 import yolo_model
 
 app = FastAPI(title="AI Plant Health Monitoring", version="0.1.0")
+_UI_PATH = Path(__file__).resolve().parent / "web" / "index.html"
 
 
 @app.get("/")
@@ -173,3 +176,11 @@ def get_analysis() -> AnalysisResponse:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/ui", include_in_schema=False)
+def ui() -> FileResponse:
+    """Serve a lightweight browser UI for interactive testing."""
+    if not _UI_PATH.is_file():
+        raise HTTPException(status_code=404, detail="UI file not found")
+    return FileResponse(_UI_PATH)
