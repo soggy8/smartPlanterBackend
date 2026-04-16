@@ -1,0 +1,13 @@
+# YOLO dataset config for tomato fruit maturity detection.
+# Run training from repo root so this path resolves correctly.
+
+path: datasets/tomato_fruit
+train: images/train
+val: images/val
+
+names:
+  0: fruit_fully_ripened
+  1: fruit_half_ripened
+  2: fruit_green
+
+nc: 3

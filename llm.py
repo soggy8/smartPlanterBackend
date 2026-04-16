@@ -30,7 +30,12 @@ def _strip_code_fences(text: str) -> str:
     return text
 
 
-def _build_prompt(sensor_summary: str, vision_summary: str, sensor_raw: dict[str, Any]) -> str:
+def _build_prompt(
+    sensor_summary: str,
+    vision_summary: str,
+    sensor_raw: dict[str, Any],
+    fruit_summary: str,
+) -> str:
     return f"""You are an agricultural AI assistant.
 
 Sensor data (raw):
@@ -44,6 +49,9 @@ Sensor interpretation:
 Vision analysis:
 {vision_summary}
 
+Fruit maturity analysis:
+{fruit_summary}
+
 Respond with JSON ONLY (no markdown fences) using exactly these keys:
 "health_score" (number 0-100),
 "status" (short string),
@@ -56,14 +64,19 @@ Example shape:
 """
 
 
-def generate_health_json(sensor_summary: str, vision_summary: str, sensor_raw: dict[str, Any]) -> dict[str, Any]:
+def generate_health_json(
+    sensor_summary: str,
+    vision_summary: str,
+    sensor_raw: dict[str, Any],
+    fruit_summary: str = "No fruit maturity detections available",
+) -> dict[str, Any]:
     """
     Step 1: build prompt. Step 2: POST to Ollama. Step 3: parse JSON object.
 
     Raises:
         LLMError: on HTTP errors or invalid JSON payload.
     """
-    prompt = _build_prompt(sensor_summary, vision_summary, sensor_raw)
+    prompt = _build_prompt(sensor_summary, vision_summary, sensor_raw, fruit_summary)
     url = f"{OLLAMA_HOST.rstrip('/')}/api/generate"
     payload = {
         "model": OLLAMA_MODEL,

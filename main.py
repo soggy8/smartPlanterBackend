@@ -9,6 +9,8 @@ from fastapi import FastAPI, File, HTTPException, Response, UploadFile
 from pydantic import BaseModel, Field
 
 import llm
+import fruit
+import fruit_model
 import sensors
 import vision
 import yolo_model
@@ -49,6 +51,8 @@ class VisionDetection(BaseModel):
 class DebugPayload(BaseModel):
     vision_detections: list[VisionDetection]
     vision_summary: str
+    fruit_detections: list[VisionDetection]
+    fruit_summary: str
     sensor_summary: str
     sensor_raw: dict[str, Any]
 
@@ -118,12 +122,27 @@ def get_analysis() -> AnalysisResponse:
     conf_threshold = float(os.environ.get("YOLO_CONF", "0.25"))
     # Step 3a: phrase-level vision summary
     vision_summary = vision.interpret_detections(detections, conf_threshold=conf_threshold)
+    # Step 3b: fruit maturity model
+    try:
+        fruit_detections = fruit_model.run_inference(_last_image_bytes)
+    except FileNotFoundError:
+        # Fruit model is optional; empty detections still allow analysis.
+        fruit_detections = []
+    except Exception as exc:  # pragma: no cover - ultralytics runtime
+        raise HTTPException(status_code=500, detail=f"fruit inference failed: {exc}") from exc
+    fruit_conf = float(os.environ.get("FRUIT_YOLO_CONF", "0.25"))
+    fruit_summary = fruit.interpret_detections(fruit_detections, conf_threshold=fruit_conf)
     # Step 3b: sensor summary
     sensor_summary = sensors.interpret_sensor_readings(_last_sensor)
 
     # Step 4: LLM JSON
     try:
-        llm_payload = llm.generate_health_json(sensor_summary, vision_summary, _last_sensor)
+        llm_payload = llm.generate_health_json(
+            sensor_summary=sensor_summary,
+            vision_summary=vision_summary,
+            sensor_raw=_last_sensor,
+            fruit_summary=fruit_summary,
+        )
     except llm.LLMError as exc:
         raise HTTPException(
             status_code=502,
@@ -135,6 +154,8 @@ def get_analysis() -> AnalysisResponse:
         debug = DebugPayload(
             vision_detections=[VisionDetection(**d) for d in detections],
             vision_summary=vision_summary,
+            fruit_detections=[VisionDetection(**d) for d in fruit_detections],
+            fruit_summary=fruit_summary,
             sensor_summary=sensor_summary,
             sensor_raw=dict(_last_sensor),
         )

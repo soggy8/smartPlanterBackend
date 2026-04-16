@@ -30,6 +30,14 @@ datasets/plant_leaves/labels/train/*
 !datasets/plant_leaves/labels/train/.gitkeep
 datasets/plant_leaves/labels/val/*
 !datasets/plant_leaves/labels/val/.gitkeep
+datasets/tomato_fruit/images/train/*
+!datasets/tomato_fruit/images/train/.gitkeep
+datasets/tomato_fruit/images/val/*
+!datasets/tomato_fruit/images/val/.gitkeep
+datasets/tomato_fruit/labels/train/*
+!datasets/tomato_fruit/labels/train/.gitkeep
+datasets/tomato_fruit/labels/val/*
+!datasets/tomato_fruit/labels/val/.gitkeep
 
 # OS / editor
 .DS_Store
@@ -37,3 +45,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Raw downloaded datasets
+datasets/raw/

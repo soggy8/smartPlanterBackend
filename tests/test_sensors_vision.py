@@ -1,4 +1,5 @@
 import sensors
+import fruit
 import vision
 
 
@@ -33,3 +34,16 @@ def test_vision_healthy_only():
     dets = [{"class_name": "healthy_leaf", "confidence": 0.9}]
     summary = vision.interpret_detections(dets, conf_threshold=0.25)
     assert "healthy" in summary.lower()
+
+
+def test_fruit_summary_counts():
+    dets = [
+        {"class_name": "b_green", "confidence": 0.8},
+        {"class_name": "l_half_ripened", "confidence": 0.9},
+        {"class_name": "fruit_fully_ripened", "confidence": 0.95},
+    ]
+    summary = fruit.interpret_detections(dets, conf_threshold=0.25).lower()
+    assert "detected 3 tomatoes" in summary
+    assert "green" in summary
+    assert "half-ripened" in summary
+    assert "fully ripened" in summary

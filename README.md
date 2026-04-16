@@ -45,6 +45,8 @@ Open `http://127.0.0.1:8000/docs` for interactive OpenAPI.
 | `OLLAMA_HOST`            | `http://127.0.0.1:11434` | Ollama server URL                                                  |
 | `OLLAMA_MODEL`           | `llama3.2`               | Model name known to Ollama                                         |
 | `ANALYSIS_INCLUDE_DEBUG` | `1`                      | Set to `0` to hide the `debug` block on `/analysis`                |
+| `FRUIT_YOLO_WEIGHTS`     | `weights/fruit_best.pt`  | Path to tomato fruit maturity model weights                        |
+| `FRUIT_YOLO_CONF`        | `0.25`                   | Confidence threshold for fruit maturity summary                    |
 
 
 ## Example `curl` flow
@@ -119,7 +121,7 @@ This repo includes a helper that **downloads** (via `kagglehub`) and **converts*
 pip install -r requirements.txt
 ```
 
-2. Build `datasets/plant_leaves/` (default: **symlinks** into the kagglehub cache to save disk; add `--copy` to duplicate files instead):
+1. Build `datasets/plant_leaves/` (default: **symlinks** into the kagglehub cache to save disk; add `--copy` to duplicate files instead):
 
 ```bash
 python scripts/prepare_kaggle_tomato_dataset.py
@@ -139,7 +141,7 @@ python scripts/prepare_kaggle_tomato_dataset.py \
   --source ~/.cache/kagglehub/datasets/charuchaudhry/plantvillage-tomato-leaf-dataset/versions/1/plantvillage
 ```
 
-Re-run the script anytime to **reset** `images/*` and `labels/*` and rebuild the split (`--val-ratio`, `--seed`).
+Re-run the script anytime to **reset** `images/`* and `labels/`* and rebuild the split (`--val-ratio`, `--seed`).
 
 Symlinks point into the kagglehub cache; if you delete that cache, rerun `prepare_kaggle_tomato_dataset.py` or use `--copy` for a self-contained copy under `datasets/plant_leaves/`.
 
@@ -175,6 +177,64 @@ Ultralytics writes weights under `runs/detect/train*/weights/best.pt` (increment
 ```bash
 export YOLO_WEIGHTS=runs/detect/train/weights/best.pt
 ```
+
+## LaboroTomato fruit maturity dataset
+
+This project now supports a second detector for tomato maturity (`green`, `half-ripened`, `fully-ripened`) to improve harvest estimates.
+
+### 1) Download and extract LaboroTomato
+
+Dataset repo/docs: [laboroai/LaboroTomato](https://github.com/laboroai/LaboroTomato)  
+Direct zip: `http://assets.laboro.ai.s3.amazonaws.com/laborotomato/laboro_tomato.zip`
+
+### 2) Convert to YOLO format
+
+If your extracted folder has separate train/val COCO json files:
+
+```bash
+python scripts/prepare_laboro_tomato.py --source /path/to/laboro_tomato
+```
+
+If it has a single COCO json file, split automatically:
+
+```bash
+python scripts/prepare_laboro_tomato.py \
+  --source /path/to/laboro_tomato \
+  --single-json instances_default.json \
+  --val-ratio 0.2
+```
+
+This creates:
+
+```
+datasets/tomato_fruit/
+  images/train
+  images/val
+  labels/train
+  labels/val
+```
+
+Label remap used by the script:
+
+- `b_fully_ripened`, `l_fully_ripened` -> `fruit_fully_ripened`
+- `b_half_ripened`, `l_half_ripened` -> `fruit_half_ripened`
+- `b_green`, `l_green` -> `fruit_green`
+
+### 3) Train fruit model
+
+```bash
+python train_fruit.py --data data/tomato_fruit.yaml --epochs 40 --imgsz 640 --weights yolov8n.pt
+```
+
+### 4) Use both models in analysis
+
+```bash
+export YOLO_WEIGHTS=weights/best.pt
+export FRUIT_YOLO_WEIGHTS=weights/fruit_best.pt
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+If fruit weights are missing, the API still works; fruit summary falls back to "no fruit detections".
 
 ## Tests
 
@@ -217,10 +277,13 @@ Official docs: [Thunder Compute quickstart](https://www.thundercompute.com/docs/
 
 - `main.py` — FastAPI routes and in-memory state
 - `yolo_model.py` — Ultralytics load + predict
+- `fruit_model.py` — fruit maturity YOLO load + predict
 - `vision.py` — detection → phrases
+- `fruit.py` — fruit maturity detection → harvest-oriented summary
 - `sensors.py` — thresholds → summary
 - `llm.py` — Ollama `/api/generate` + JSON parsing
 - `train.py` — training CLI
+- `train_fruit.py` — fruit maturity training CLI
 
 ## Notes
 
