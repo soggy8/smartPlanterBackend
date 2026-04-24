@@ -72,6 +72,7 @@ class AnalysisResponse(BaseModel):
 # --- In-memory demo state (single concurrent user) ---
 _last_sensor: dict[str, Any] | None = None
 _last_image_bytes: bytes | None = None
+_last_image_content_type: str = "image/jpeg"
 
 
 def _include_debug() -> bool:
@@ -93,10 +94,11 @@ def post_sensor_data(payload: SensorPayload) -> dict[str, str]:
 @app.post("/image")
 async def post_image(file: UploadFile = File(...)) -> dict[str, str]:
     """Step 0b: accept an uploaded plant image and store bytes in memory."""
-    global _last_image_bytes
+    global _last_image_bytes, _last_image_content_type
     _last_image_bytes = await file.read()
     if not _last_image_bytes:
         raise HTTPException(status_code=400, detail="empty upload")
+    _last_image_content_type = file.content_type or "image/jpeg"
     return {"status": "ok", "message": "image stored"}
 
 
@@ -184,3 +186,11 @@ def ui() -> FileResponse:
     if not _UI_PATH.is_file():
         raise HTTPException(status_code=404, detail="UI file not found")
     return FileResponse(_UI_PATH)
+
+
+@app.get("/latest-image", include_in_schema=False)
+def latest_image() -> Response:
+    """Return the latest uploaded image bytes for UI preview."""
+    if _last_image_bytes is None:
+        raise HTTPException(status_code=404, detail="no image uploaded yet")
+    return Response(content=_last_image_bytes, media_type=_last_image_content_type)

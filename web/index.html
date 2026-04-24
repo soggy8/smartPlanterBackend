@@ -67,6 +67,11 @@
         gap: 10px;
         flex-wrap: wrap;
       }
+      .inline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
       button {
         border: none;
         border-radius: 8px;
@@ -136,9 +141,28 @@
         </div>
         <div class="actions">
           <button class="primary" id="runBtn">Run Analysis</button>
+          <button class="secondary" id="refreshBtn">Refresh Latest Analysis</button>
           <button class="secondary" id="sampleBtn">Use Random Sensor Sample</button>
+          <label class="inline small">
+            <input id="autoRefresh" type="checkbox" checked />
+            Auto-refresh
+          </label>
+          <label class="inline small">
+            Interval (s)
+            <input id="refreshSeconds" type="number" value="15" min="5" style="width: 90px" />
+          </label>
         </div>
         <div id="status" class="small"></div>
+        <div id="lastUpdated" class="small" style="color: #94a3b8"></div>
+      </div>
+
+      <div class="card">
+        <label>Latest Uploaded Image</label>
+        <img
+          id="latestPreview"
+          alt="Latest uploaded plant"
+          style="width: 100%; max-height: 360px; object-fit: contain; border: 1px solid #334155; border-radius: 10px; background: #020617"
+        />
       </div>
 
       <div class="card">
@@ -150,6 +174,11 @@
     <script>
       const statusEl = document.getElementById("status");
       const outEl = document.getElementById("output");
+      const lastUpdatedEl = document.getElementById("lastUpdated");
+      const refreshSecondsEl = document.getElementById("refreshSeconds");
+      const autoRefreshEl = document.getElementById("autoRefresh");
+      const latestPreviewEl = document.getElementById("latestPreview");
+      let refreshTimer = null;
 
       function setStatus(msg, isError = false) {
         statusEl.textContent = msg;
@@ -158,6 +187,41 @@
 
       function val(id) {
         return Number(document.getElementById(id).value);
+      }
+
+      function markUpdated() {
+        lastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      }
+
+      function refreshImagePreview() {
+        latestPreviewEl.src = `/latest-image?t=${Date.now()}`;
+      }
+
+      async function fetchLatestAnalysis(silent = false) {
+        try {
+          const r = await fetch("/analysis");
+          const data = await r.json();
+          if (!r.ok) {
+            // If prerequisites are missing, do not spam loud errors during auto refresh.
+            const detail = data && data.detail ? JSON.stringify(data.detail) : JSON.stringify(data);
+            if (!silent) setStatus(`Analysis fetch failed: ${detail}`, true);
+            return;
+          }
+          outEl.textContent = JSON.stringify(data, null, 2);
+          refreshImagePreview();
+          markUpdated();
+          if (!silent) setStatus("Latest analysis loaded.");
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!silent) setStatus(`Error: ${msg}`, true);
+        }
+      }
+
+      function startAutoRefresh() {
+        if (refreshTimer) clearInterval(refreshTimer);
+        if (!autoRefreshEl.checked) return;
+        const sec = Math.max(5, Number(refreshSecondsEl.value) || 15);
+        refreshTimer = setInterval(() => fetchLatestAnalysis(true), sec * 1000);
       }
 
       document.getElementById("sampleBtn").addEventListener("click", () => {
@@ -193,19 +257,30 @@
           fd.append("file", imageInput.files[0]);
           r = await fetch("/image", { method: "POST", body: fd });
           if (!r.ok) throw new Error(await r.text());
+          refreshImagePreview();
 
           setStatus("Running analysis...");
-          r = await fetch("/analysis");
-          const data = await r.json();
-          if (!r.ok) throw new Error(JSON.stringify(data));
-
-          outEl.textContent = JSON.stringify(data, null, 2);
+          await fetchLatestAnalysis(true);
           setStatus("Analysis complete.");
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           setStatus(`Error: ${msg}`, true);
         }
       });
+
+      document.getElementById("refreshBtn").addEventListener("click", async () => {
+        setStatus("Refreshing latest analysis...");
+        await fetchLatestAnalysis(true);
+        setStatus("Latest analysis loaded.");
+      });
+
+      autoRefreshEl.addEventListener("change", startAutoRefresh);
+      refreshSecondsEl.addEventListener("change", startAutoRefresh);
+
+      // Initialize view with current analysis if available, then keep polling.
+      fetchLatestAnalysis(true);
+      refreshImagePreview();
+      startAutoRefresh();
     </script>
   </body>
 </html>
