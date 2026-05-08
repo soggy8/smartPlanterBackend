@@ -104,4 +104,4 @@ If you previously kept `datasets/` or `weights/` at the **repository root**, mov
 
 ## License
 
-Add a license file if you plan to publish this repo publicly.
+This project is licensed under the [MIT License](LICENSE).
