@@ -19,25 +19,25 @@ wandb/
 *.pt
 
 # Local weights (download or train your own)
-weights/*.pt
+backend/weights/*.pt
 
-# Prepared dataset (large; regenerate on GPU with scripts/prepare_kaggle_tomato_dataset.py)
-datasets/plant_leaves/images/train/*
-!datasets/plant_leaves/images/train/.gitkeep
-datasets/plant_leaves/images/val/*
-!datasets/plant_leaves/images/val/.gitkeep
-datasets/plant_leaves/labels/train/*
-!datasets/plant_leaves/labels/train/.gitkeep
-datasets/plant_leaves/labels/val/*
-!datasets/plant_leaves/labels/val/.gitkeep
-datasets/tomato_fruit/images/train/*
-!datasets/tomato_fruit/images/train/.gitkeep
-datasets/tomato_fruit/images/val/*
-!datasets/tomato_fruit/images/val/.gitkeep
-datasets/tomato_fruit/labels/train/*
-!datasets/tomato_fruit/labels/train/.gitkeep
-datasets/tomato_fruit/labels/val/*
-!datasets/tomato_fruit/labels/val/.gitkeep
+# Prepared dataset (large; regenerate on GPU with backend/scripts/prepare_kaggle_tomato_dataset.py)
+backend/datasets/plant_leaves/images/train/*
+!backend/datasets/plant_leaves/images/train/.gitkeep
+backend/datasets/plant_leaves/images/val/*
+!backend/datasets/plant_leaves/images/val/.gitkeep
+backend/datasets/plant_leaves/labels/train/*
+!backend/datasets/plant_leaves/labels/train/.gitkeep
+backend/datasets/plant_leaves/labels/val/*
+!backend/datasets/plant_leaves/labels/val/.gitkeep
+backend/datasets/tomato_fruit/images/train/*
+!backend/datasets/tomato_fruit/images/train/.gitkeep
+backend/datasets/tomato_fruit/images/val/*
+!backend/datasets/tomato_fruit/images/val/.gitkeep
+backend/datasets/tomato_fruit/labels/train/*
+!backend/datasets/tomato_fruit/labels/train/.gitkeep
+backend/datasets/tomato_fruit/labels/val/*
+!backend/datasets/tomato_fruit/labels/val/.gitkeep
 
 # OS / editor
 .DS_Store
@@ -47,4 +47,7 @@ Thumbs.db
 *.swp
 
 # Raw downloaded datasets
-datasets/raw/
+backend/datasets/raw/
+
+# Legacy dataset tree at repo root (training data lives under backend/datasets/)
+/datasets/

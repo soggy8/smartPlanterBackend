@@ -13,7 +13,7 @@ training here uses one full-frame box per image with a mapped class id:
 Default source: kagglehub dataset ``charuchaudhry/plantvillage-tomato-leaf-dataset``
 (``plantvillage/`` inside the extracted version folder).
 
-Outputs (under repo root by default):
+Outputs (under ``backend/`` by default):
 
   datasets/plant_leaves/images/{train,val}/*.jpg
   datasets/plant_leaves/labels/{train,val}/*.txt   # one YOLO line: cls 0.5 0.5 1 1

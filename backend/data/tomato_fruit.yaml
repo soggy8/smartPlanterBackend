@@ -1,5 +1,5 @@
 # YOLO dataset config for tomato fruit maturity detection.
-# Run training from repo root so this path resolves correctly.
+# Run training from ``backend/`` so this path resolves correctly.
 
 path: datasets/tomato_fruit
 train: images/train

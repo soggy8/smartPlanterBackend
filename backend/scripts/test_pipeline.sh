@@ -2,7 +2,9 @@
 set -euo pipefail
 
 BASE_URL="${BASE_URL:-http://127.0.0.1:8000}"
-IMAGE_PATH="${1:-/home/andrej/projects/python/smartPlanterBackend/datasets/plant_leaves/images/val/00169de30b63a90b8f76.jpg}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+IMAGE_PATH="${1:-$BACKEND_DIR/datasets/plant_leaves/images/val/00169de30b63a90b8f76.jpg}"
 MOISTURE="${MOISTURE:-25}"
 TEMPERATURE="${TEMPERATURE:-28}"
 LIGHT="${LIGHT:-600}"
